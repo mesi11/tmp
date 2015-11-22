@@ -129,10 +129,10 @@ $(function() {
 	 * 地図スクロール処理
 	 *********************/
 //	new ScrollMap( $("#scroll_map") );
-
 	$("#scroll_map").ScrollMap();
 
 //	new ScrollMap( $("#scroll_nagoya_map") );
+	$("#scroll_nagoya_map").ScrollMap();
 
 	/*********************
 	 * 地図画像ドラッグ防止
@@ -161,42 +161,10 @@ $(function() {
 //	doScroll(3006, 3237);
 
 
-console.log( $("#scroll_map").ScrollMap() );
+
 
 });
 
-
-
-
-
-
-
-
-
-
-
-
-
-// 座標取得クラス
-var Position =  function(element){
-	this.x = parseInt( element.offset().left );
-	this.y = parseInt( element.offset().top );
-}
-
-
-
-function doScroll(x, y){
-	// 現在位置を取得
-	var scroll_map = $( "#scroll_map" );
-	var map = $( ".main_map" );
-
-	var scroll_width = scroll_map.width();
-	var scroll_height = scroll_map.height();
-
-	// 指定位置へスクロール
-	scroll_map.scrollTop(y + scroll_height/2);
-	scroll_map.scrollLeft(x + scroll_width/2);
-}
 
 
 $(function(){
@@ -210,6 +178,26 @@ $(function(){
 		}
 	);
 });
+
+/*
+$(".main_map").load(function(){
+	doScroll(3006, 3237);
+});
+*/
+
+function doScroll(x, y){
+	// 現在位置を取得
+	var scroll_map = $( "#scroll_map" );
+//	var map = $( ".main_map" );
+
+	var scroll_width = scroll_map.width();
+	var scroll_height = scroll_map.height();
+
+	// 指定位置へスクロール
+	scroll_map.scrollTop(y + scroll_height/2);
+	scroll_map.scrollLeft(x + scroll_width/2);
+}
+
 
 
 </script>
