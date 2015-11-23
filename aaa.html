@@ -8,6 +8,7 @@
 	// リサイズアイコンが消える（スクロールストップイベント判定したい）
 	// カーソル切替
 	// ピクトグラムでメニュー作成
+	// http://matome.naver.jp/odai/2132427271913654801
 	// 経路リスト
 	// 画像縮小表示できるか？
 	// 経路線の描画(fabric.js)
@@ -148,7 +149,7 @@
 
 			if( mouse_down===true ){
 				// カーソル切替
-				$(this).hover(function(){ $(this).css('cursor', 'url(cur_closedhand.cur)'); }, function(){ $(this).css('cursor', 'url(cur_hand.cur)'); });
+				$(this).hover(function(){ $(this).css('cursor', "url('cur/cur_closedhand.cur')"); }, function(){ $(this).css('cursor', "url('cur/cur_hand.cur')"); });
 
 console.log(this);
 
