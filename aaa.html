@@ -7,11 +7,14 @@
 	TODO
 	// リサイズアイコンが消える（スクロールストップイベント判定したい）
 	// カーソル切替
-	// ピクトグラムでメニュー作成
 	// http://matome.naver.jp/odai/2132427271913654801
 	// 経路リスト
 	// 画像縮小表示できるか？
 	// 経路線の描画(fabric.js)
+	// menu
+	// ピクトグラム
+	// https://github.com/jillix/jQuery-sidebar/
+	// http://www.skuare.net/test/jsidebar.html
 -->
 
 <link rel="stylesheet" href="css/jquery-ui.css">
@@ -213,7 +216,7 @@ $(function() {
 		width: 1000,
 	});
 
-//	doScroll(3006, 3237);
+	doScroll(3006, 3237);
 
 
 // カーソル切替
@@ -258,8 +261,8 @@ function doScroll(x, y){
 	var scroll_height = scroll_map.height();
 
 	// 指定位置へスクロール
-	scroll_map.scrollTop(y + scroll_height/2);
-	scroll_map.scrollLeft(x + scroll_width/2);
+	scroll_map.scrollTop(y - scroll_height/2);
+	scroll_map.scrollLeft(x - scroll_width/2);
 //	$('#scroll_map').trigger("scroll");
 }
 
@@ -269,15 +272,31 @@ $(function(){
 	var canvas = new fabric.Canvas('canvas');
 	var pointList = [{id:'hoge', x:3000, y:3237}, {id:'hogehoge',x:2000, y:2237}];
 
+	// 線の描画
+	for(var i=0; i<pointList.length-1; i++){
+		var line = new fabric.Line([pointList[i].x, pointList[i].y, pointList[i+1].x, pointList[i+1].y], {
+			stroke: 'green',
+			fill: 'green',
+			strokeWidth: 5,
+			selectable: false
+		});
+		canvas.add(line);
+	}
+
+
+
+
 	for(var i=0; i<pointList.length; i++){
 		// 円の描画
 		var circle = new fabric.Circle({
 			id: pointList[i].id,
 			left: pointList[i].x,
 			top: pointList[i].y,
-			fill: 'blue',
 			radius: 7,
-			selectable: false
+			fill: 'blue',
+			strokeWidth: 2,
+			stroke: '#000',
+			selectable: false,
 		});
 		canvas.add(circle);
 	}
@@ -296,14 +315,7 @@ $(function(){
 		}
 	});
 
-	// 線の描画
-	var line = new fabric.Line([100, 100, 200, 200], {
-		stroke: 'green',
-		fill: 'green',
-		strokeWidth: 5,
-		selectable: false
-	});
-	canvas.add(line);
+
 
 	canvas.setBackgroundColor(null, canvas.renderAll.bind(canvas));
 	canvas.renderAll();
