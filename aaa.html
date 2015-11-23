@@ -267,24 +267,44 @@ function doScroll(x, y){
 
 $(function(){
 	var canvas = new fabric.Canvas('canvas');
+	var pointList = [{id:'hoge', x:3000, y:3237}, {id:'hogehoge',x:2000, y:2237}];
 
-	var circle = new fabric.Circle({
-		left: 3000,
-		top: 3237,
-		fill: 'blue',
-		radius: 10
-	});
-	circle.on('selected', function(){ console.log("selected"); });
-	
+	for(var i=0; i<pointList.length; i++){
+		// 円の描画
+		var circle = new fabric.Circle({
+			id: pointList[i].id,
+			left: pointList[i].x,
+			top: pointList[i].y,
+			fill: 'blue',
+			radius: 7,
+			selectable: false
+		});
+		canvas.add(circle);
+	}
+
+
+	/*
+	 * イベント操作
+	 */
+//		circle.on('selected', function(){ console.log("selected"); });
+	// 円クリックで色変更
 	canvas.on('mouse:down', function(options){
-		if(options.target){
-			console.log(options.target);
-			console.log("@@@@@@@@@@@@@@@@@@@@@", options.target.type);
+		if(options.target && options.target.type=='circle'){
+			console.log(options.target.id);
+			// ●●●リクエストを飛ばしたい
+			options.target.fill = (options.target.fill=='blue') ? 'red' : 'blue';
 		}
 	});
-	
 
-	canvas.add(circle);
+	// 線の描画
+	var line = new fabric.Line([100, 100, 200, 200], {
+		stroke: 'green',
+		fill: 'green',
+		strokeWidth: 5,
+		selectable: false
+	});
+	canvas.add(line);
+
 	canvas.setBackgroundColor(null, canvas.renderAll.bind(canvas));
 	canvas.renderAll();
 });
