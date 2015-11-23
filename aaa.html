@@ -6,16 +6,18 @@
 <!--
 	TODO
 	// リサイズアイコンが消える（スクロールストップイベント判定したい）
-	// 首都高等を上部レイヤで表示できるか？
+	// カーソル切替
+	// ピクトグラムでメニュー作成
 	// 経路リスト
 	// 画像縮小表示できるか？
-	// 経路線の描画
+	// 経路線の描画(fabric.js)
 -->
 
 <link rel="stylesheet" href="css/jquery-ui.css">
 <script type="text/javascript" src="js/jquery-1.11.3.min.js"></script>
 <script type="text/javascript" src="js/jquery-ui.min.js"></script>
 <script type="text/javascript" src="js/jquery.lazy.min.js"></script>
+<script type="text/javascript" src="js/fabric.min.js"></script>
 
 <style>
 	#scroll_map {
@@ -33,31 +35,16 @@
 		height:4800px;
 		font-size:0pt;
 		margin:0;
-		border:red solid 1px;
+//		border:red solid 1px;
 	}
 
-	.map_tile {
-		display: inline-block;
-		padding: 0;
-		margin: 0;
-	}
-
-	.map_tile_img{
-		-webkit-user-select: none;
-		-ms-user-select: none;
-		user-select: none;
-		-webkit-user-drag: none;
-		user-drag: none;
-	}
-
-
-	#scroll_nagoya_map{
+	#scroll_local_map{
 		width: 1000px;
 		height: 700px;
 		overflow: hidden;
 	}
 
-	.nagoya_map {
+	.local_main_map {
 		width:2864px;
 		height:2640px;
 		font-size:0pt;
@@ -67,6 +54,66 @@
 
 
 
+
+	img.lazy{
+//		display: inline-block;
+		-webkit-user-select: none;
+		-ms-user-select: none;
+		user-select: none;
+		-webkit-user-drag: none;
+		user-drag: none;
+	}
+
+	img.square300{
+		width: 300px;
+		height: 300px;
+	}
+
+	img.square800{
+		width: 800px;
+		height: 800px;
+	}
+
+	img.rectangle2064_800{
+		width: 2064px;
+		height: 800px;
+	}
+
+	img.rectangle800_1840{
+		width: 800px;
+		height: 1840px;
+	}
+
+	img.rectangle2064_1840{
+		width: 2064px;
+		height: 1840px;
+	}
+
+	.local_map_btn{
+		width: 129px;
+		height: 50px;
+		position: absolute;
+		background-color:white
+	}
+
+	canvas:hover{
+		cursor: crosshair
+	}
+
+
+
+.canvas-container{
+	position:absolute !important;
+}
+
+
+.hand{
+	cursor: hand !important;
+}
+
+.crosshair{
+	cursor: crosshair !important;
+}
 
 </style>
 
@@ -97,9 +144,14 @@
 			var pageX = parseInt(event.pageX);
 			var pageY = parseInt(event.pageY);
 
-	console.log( "x:" + ($(this).scrollLeft()+pageX) + " y:" + ($(this).scrollTop()+pageY));
+//	console.log( "x:" + ($(this).scrollLeft()+pageX) + " y:" + ($(this).scrollTop()+pageY));
 
 			if( mouse_down===true ){
+				// カーソル切替
+				$(this).hover(function(){ $(this).css('cursor', 'url(cur_closedhand.cur)'); }, function(){ $(this).css('cursor', 'url(cur_hand.cur)'); });
+
+console.log(this);
+
 				var left = $(this).scrollLeft();
 				var top = $(this).scrollTop();
 				$(this).scrollLeft(left + cursor.x - pageX);
@@ -128,22 +180,24 @@ $(function() {
 	/*********************
 	 * 地図スクロール処理
 	 *********************/
-//	new ScrollMap( $("#scroll_map") );
 	$("#scroll_map").ScrollMap();
 
-//	new ScrollMap( $("#scroll_nagoya_map") );
-	$("#scroll_nagoya_map").ScrollMap();
+	$("#scroll_local_map").ScrollMap();
 
 	/*********************
-	 * 地図画像ドラッグ防止
+	 * 画像ドラッグ防止
 	 *********************/
-	$( ".map_tile_img" ).on("dragstart", function(){ return false; });
+	$( "img" ).on("dragstart", function(){ return false; });
 
 	/*********************
 	 * 画像遅延ロード
 	 *********************/
 	$('.lazy').lazy({
 		effect: 'fadeIn',
+		defaultImage: 'img/map/dummy.gif',
+		appendScroll: $("#scroll_map"),
+		bind: event,
+		threshold: 100,
 	});
 
 	// 地図リサイズ
@@ -152,7 +206,7 @@ $(function() {
 	/*********************
 	 * 地図ダイアログ初期化
 	 *********************/
-	$( "#scroll_nagoya_map" ).dialog({
+	$( "#scroll_local_map" ).dialog({
 		autoOpen: false,
 		height: 700,
 		width: 1000,
@@ -161,29 +215,38 @@ $(function() {
 //	doScroll(3006, 3237);
 
 
+// カーソル切替
+$("#scroll_map").hover(function(){
+		console.log(this);
+		$(this).css("cursor", "url('cur/cur_closedhand.cur')");
+	}, function(){
+		console.log("bbb");
+		$(this).css("cursor", "url('cur/cur_hand.cur')");
+	});
 
 
+	console.log("inittttttttttttttttttttttttttttt");
 });
 
 
 
 $(function(){
-	$( "#urbanhighway_nagoya_btn" ).hover(
-		function(){ $(this).attr('src', $(this).attr('src').replace('_out', '_over')); },
+	$( ".local_map_btn" ).hover(
+		function(){
+			$(this).css('cursor', 'pointer');
+			$(this).attr('src', $(this).attr('src').replace('_out', '_over'));
+		},
 		function(){ $(this).attr('src', $(this).attr('src').replace('_over', '_out')); }
-	).click(
+	);
+
+	$("#urbanhighway_nagoya_btn").click(
 		function(){
 			// region map ダイアログ表示
-			$( "#scroll_nagoya_map" ).dialog( "open" );
+			$( "#scroll_local_map" ).dialog( "open" );
 		}
 	);
 });
 
-/*
-$(".main_map").load(function(){
-	doScroll(3006, 3237);
-});
-*/
 
 function doScroll(x, y){
 	// 現在位置を取得
@@ -196,7 +259,37 @@ function doScroll(x, y){
 	// 指定位置へスクロール
 	scroll_map.scrollTop(y + scroll_height/2);
 	scroll_map.scrollLeft(x + scroll_width/2);
+//	$('#scroll_map').trigger("scroll");
 }
+
+
+
+$(function(){
+	var canvas = new fabric.Canvas('canvas');
+
+	var circle = new fabric.Circle({
+		left: 3000,
+		top: 3237,
+		fill: 'blue',
+		radius: 10
+	});
+	circle.on('selected', function(){ console.log("selected"); });
+	
+	canvas.on('mouse:down', function(options){
+		if(options.target){
+			console.log(options.target);
+			console.log("@@@@@@@@@@@@@@@@@@@@@", options.target.type);
+		}
+	});
+	
+
+	canvas.add(circle);
+	canvas.setBackgroundColor(null, canvas.renderAll.bind(canvas));
+	canvas.renderAll();
+});
+
+
+
 
 
 
@@ -210,290 +303,290 @@ function doScroll(x, y){
 
 <div id="scroll_map">
 	<div class="main_map">
+		<canvas id="canvas" width="4800px" height="4800px" style="position: absolute;"></canvas>
 
-		<canvas width="4800px" height="4800px" style="position:absolute;"></canvas>
-		<img id="urbanhighway_nagoya_btn" src="img/urbanhighway_nagoya_out.png" title="ダイアログのタイトル" width="129px" height="50px" style="position: absolute; left:2860px; top:3100px;background-color:white">
+		<img id="urbanhighway_nagoya_btn" class="local_map_btn" src="img/urbanhighway_nagoya_out.png" title="ダイアログのタイトル" style="left: 2860px; top: 3100px;">
 
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_0_0.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_1_0.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_2_0.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_3_0.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_4_0.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_5_0.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_6_0.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_7_0.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_8_0.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_9_0.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_10_0.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_11_0.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_12_0.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_13_0.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_14_0.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_15_0.gif" ></div>
+		<img class="lazy square300" data-src="img/map/map_0_0.gif" />
+		<img class="lazy square300" data-src="img/map/map_1_0.gif" />
+		<img class="lazy square300" data-src="img/map/map_2_0.gif" />
+		<img class="lazy square300" data-src="img/map/map_3_0.gif" />
+		<img class="lazy square300" data-src="img/map/map_4_0.gif" />
+		<img class="lazy square300" data-src="img/map/map_5_0.gif" />
+		<img class="lazy square300" data-src="img/map/map_6_0.gif" />
+		<img class="lazy square300" data-src="img/map/map_7_0.gif" />
+		<img class="lazy square300" data-src="img/map/map_8_0.gif" />
+		<img class="lazy square300" data-src="img/map/map_9_0.gif" />
+		<img class="lazy square300" data-src="img/map/map_10_0.gif" />
+		<img class="lazy square300" data-src="img/map/map_11_0.gif" />
+		<img class="lazy square300" data-src="img/map/map_12_0.gif" />
+		<img class="lazy square300" data-src="img/map/map_13_0.gif" />
+		<img class="lazy square300" data-src="img/map/map_14_0.gif" />
+		<img class="lazy square300" data-src="img/map/map_15_0.gif" />
 
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_0_1.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_1_1.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_2_1.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_3_1.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_4_1.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_5_1.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_6_1.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_7_1.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_8_1.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_9_1.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_10_1.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_11_1.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_12_1.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_13_1.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_14_1.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_15_1.gif" ></div>
+		<img class="lazy square300" data-src="img/map/map_0_1.gif" />
+		<img class="lazy square300" data-src="img/map/map_1_1.gif" />
+		<img class="lazy square300" data-src="img/map/map_2_1.gif" />
+		<img class="lazy square300" data-src="img/map/map_3_1.gif" />
+		<img class="lazy square300" data-src="img/map/map_4_1.gif" />
+		<img class="lazy square300" data-src="img/map/map_5_1.gif" />
+		<img class="lazy square300" data-src="img/map/map_6_1.gif" />
+		<img class="lazy square300" data-src="img/map/map_7_1.gif" />
+		<img class="lazy square300" data-src="img/map/map_8_1.gif" />
+		<img class="lazy square300" data-src="img/map/map_9_1.gif" />
+		<img class="lazy square300" data-src="img/map/map_10_1.gif" />
+		<img class="lazy square300" data-src="img/map/map_11_1.gif" />
+		<img class="lazy square300" data-src="img/map/map_12_1.gif" />
+		<img class="lazy square300" data-src="img/map/map_13_1.gif" />
+		<img class="lazy square300" data-src="img/map/map_14_1.gif" />
+		<img class="lazy square300" data-src="img/map/map_15_1.gif" />
 
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_0_2.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_1_2.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_2_2.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_3_2.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_4_2.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_5_2.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_6_2.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_7_2.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_8_2.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_9_2.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_10_2.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_11_2.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_12_2.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_13_2.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_14_2.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_15_2.gif" ></div>
+		<img class="lazy square300" data-src="img/map/map_0_2.gif" />
+		<img class="lazy square300" data-src="img/map/map_1_2.gif" />
+		<img class="lazy square300" data-src="img/map/map_2_2.gif" />
+		<img class="lazy square300" data-src="img/map/map_3_2.gif" />
+		<img class="lazy square300" data-src="img/map/map_4_2.gif" />
+		<img class="lazy square300" data-src="img/map/map_5_2.gif" />
+		<img class="lazy square300" data-src="img/map/map_6_2.gif" />
+		<img class="lazy square300" data-src="img/map/map_7_2.gif" />
+		<img class="lazy square300" data-src="img/map/map_8_2.gif" />
+		<img class="lazy square300" data-src="img/map/map_9_2.gif" />
+		<img class="lazy square300" data-src="img/map/map_10_2.gif" />
+		<img class="lazy square300" data-src="img/map/map_11_2.gif" />
+		<img class="lazy square300" data-src="img/map/map_12_2.gif" />
+		<img class="lazy square300" data-src="img/map/map_13_2.gif" />
+		<img class="lazy square300" data-src="img/map/map_14_2.gif" />
+		<img class="lazy square300" data-src="img/map/map_15_2.gif" />
 
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_0_3.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_1_3.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_2_3.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_3_3.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_4_3.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_5_3.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_6_3.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_7_3.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_8_3.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_9_3.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_10_3.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_11_3.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_12_3.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_13_3.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_14_3.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_15_3.gif" ></div>
+		<img class="lazy square300" data-src="img/map/map_0_3.gif" />
+		<img class="lazy square300" data-src="img/map/map_1_3.gif" />
+		<img class="lazy square300" data-src="img/map/map_2_3.gif" />
+		<img class="lazy square300" data-src="img/map/map_3_3.gif" />
+		<img class="lazy square300" data-src="img/map/map_4_3.gif" />
+		<img class="lazy square300" data-src="img/map/map_5_3.gif" />
+		<img class="lazy square300" data-src="img/map/map_6_3.gif" />
+		<img class="lazy square300" data-src="img/map/map_7_3.gif" />
+		<img class="lazy square300" data-src="img/map/map_8_3.gif" />
+		<img class="lazy square300" data-src="img/map/map_9_3.gif" />
+		<img class="lazy square300" data-src="img/map/map_10_3.gif" />
+		<img class="lazy square300" data-src="img/map/map_11_3.gif" />
+		<img class="lazy square300" data-src="img/map/map_12_3.gif" />
+		<img class="lazy square300" data-src="img/map/map_13_3.gif" />
+		<img class="lazy square300" data-src="img/map/map_14_3.gif" />
+		<img class="lazy square300" data-src="img/map/map_15_3.gif" />
 
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_0_4.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_1_4.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_2_4.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_3_4.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_4_4.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_5_4.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_6_4.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_7_4.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_8_4.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_9_4.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_10_4.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_11_4.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_12_4.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_13_4.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_14_4.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_15_4.gif" ></div>
+		<img class="lazy square300" data-src="img/map/map_0_4.gif" />
+		<img class="lazy square300" data-src="img/map/map_1_4.gif" />
+		<img class="lazy square300" data-src="img/map/map_2_4.gif" />
+		<img class="lazy square300" data-src="img/map/map_3_4.gif" />
+		<img class="lazy square300" data-src="img/map/map_4_4.gif" />
+		<img class="lazy square300" data-src="img/map/map_5_4.gif" />
+		<img class="lazy square300" data-src="img/map/map_6_4.gif" />
+		<img class="lazy square300" data-src="img/map/map_7_4.gif" />
+		<img class="lazy square300" data-src="img/map/map_8_4.gif" />
+		<img class="lazy square300" data-src="img/map/map_9_4.gif" />
+		<img class="lazy square300" data-src="img/map/map_10_4.gif" />
+		<img class="lazy square300" data-src="img/map/map_11_4.gif" />
+		<img class="lazy square300" data-src="img/map/map_12_4.gif" />
+		<img class="lazy square300" data-src="img/map/map_13_4.gif" />
+		<img class="lazy square300" data-src="img/map/map_14_4.gif" />
+		<img class="lazy square300" data-src="img/map/map_15_4.gif" />
 
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_0_5.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_1_5.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_2_5.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_3_5.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_4_5.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_5_5.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_6_5.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_7_5.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_8_5.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_9_5.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_10_5.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_11_5.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_12_5.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_13_5.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_14_5.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_15_5.gif" ></div>
+		<img class="lazy square300" data-src="img/map/map_0_5.gif" />
+		<img class="lazy square300" data-src="img/map/map_1_5.gif" />
+		<img class="lazy square300" data-src="img/map/map_2_5.gif" />
+		<img class="lazy square300" data-src="img/map/map_3_5.gif" />
+		<img class="lazy square300" data-src="img/map/map_4_5.gif" />
+		<img class="lazy square300" data-src="img/map/map_5_5.gif" />
+		<img class="lazy square300" data-src="img/map/map_6_5.gif" />
+		<img class="lazy square300" data-src="img/map/map_7_5.gif" />
+		<img class="lazy square300" data-src="img/map/map_8_5.gif" />
+		<img class="lazy square300" data-src="img/map/map_9_5.gif" />
+		<img class="lazy square300" data-src="img/map/map_10_5.gif" />
+		<img class="lazy square300" data-src="img/map/map_11_5.gif" />
+		<img class="lazy square300" data-src="img/map/map_12_5.gif" />
+		<img class="lazy square300" data-src="img/map/map_13_5.gif" />
+		<img class="lazy square300" data-src="img/map/map_14_5.gif" />
+		<img class="lazy square300" data-src="img/map/map_15_5.gif" />
 
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_0_6.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_1_6.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_2_6.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_3_6.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_4_6.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_5_6.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_6_6.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_7_6.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_8_6.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_9_6.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_10_6.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_11_6.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_12_6.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_13_6.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_14_6.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_15_6.gif" ></div>
+		<img class="lazy square300" data-src="img/map/map_0_6.gif" />
+		<img class="lazy square300" data-src="img/map/map_1_6.gif" />
+		<img class="lazy square300" data-src="img/map/map_2_6.gif" />
+		<img class="lazy square300" data-src="img/map/map_3_6.gif" />
+		<img class="lazy square300" data-src="img/map/map_4_6.gif" />
+		<img class="lazy square300" data-src="img/map/map_5_6.gif" />
+		<img class="lazy square300" data-src="img/map/map_6_6.gif" />
+		<img class="lazy square300" data-src="img/map/map_7_6.gif" />
+		<img class="lazy square300" data-src="img/map/map_8_6.gif" />
+		<img class="lazy square300" data-src="img/map/map_9_6.gif" />
+		<img class="lazy square300" data-src="img/map/map_10_6.gif" />
+		<img class="lazy square300" data-src="img/map/map_11_6.gif" />
+		<img class="lazy square300" data-src="img/map/map_12_6.gif" />
+		<img class="lazy square300" data-src="img/map/map_13_6.gif" />
+		<img class="lazy square300" data-src="img/map/map_14_6.gif" />
+		<img class="lazy square300" data-src="img/map/map_15_6.gif" />
 
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_0_7.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_1_7.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_2_7.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_3_7.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_4_7.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_5_7.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_6_7.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_7_7.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_8_7.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_9_7.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_10_7.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_11_7.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_12_7.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_13_7.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_14_7.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_15_7.gif" ></div>
+		<img class="lazy square300" data-src="img/map/map_0_7.gif" />
+		<img class="lazy square300" data-src="img/map/map_1_7.gif" />
+		<img class="lazy square300" data-src="img/map/map_2_7.gif" />
+		<img class="lazy square300" data-src="img/map/map_3_7.gif" />
+		<img class="lazy square300" data-src="img/map/map_4_7.gif" />
+		<img class="lazy square300" data-src="img/map/map_5_7.gif" />
+		<img class="lazy square300" data-src="img/map/map_6_7.gif" />
+		<img class="lazy square300" data-src="img/map/map_7_7.gif" />
+		<img class="lazy square300" data-src="img/map/map_8_7.gif" />
+		<img class="lazy square300" data-src="img/map/map_9_7.gif" />
+		<img class="lazy square300" data-src="img/map/map_10_7.gif" />
+		<img class="lazy square300" data-src="img/map/map_11_7.gif" />
+		<img class="lazy square300" data-src="img/map/map_12_7.gif" />
+		<img class="lazy square300" data-src="img/map/map_13_7.gif" />
+		<img class="lazy square300" data-src="img/map/map_14_7.gif" />
+		<img class="lazy square300" data-src="img/map/map_15_7.gif" />
 
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_0_8.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_1_8.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_2_8.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_3_8.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_4_8.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_5_8.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_6_8.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_7_8.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_8_8.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_9_8.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_10_8.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_11_8.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_12_8.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_13_8.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_14_8.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_15_8.gif" ></div>
+		<img class="lazy square300" data-src="img/map/map_0_8.gif" />
+		<img class="lazy square300" data-src="img/map/map_1_8.gif" />
+		<img class="lazy square300" data-src="img/map/map_2_8.gif" />
+		<img class="lazy square300" data-src="img/map/map_3_8.gif" />
+		<img class="lazy square300" data-src="img/map/map_4_8.gif" />
+		<img class="lazy square300" data-src="img/map/map_5_8.gif" />
+		<img class="lazy square300" data-src="img/map/map_6_8.gif" />
+		<img class="lazy square300" data-src="img/map/map_7_8.gif" />
+		<img class="lazy square300" data-src="img/map/map_8_8.gif" />
+		<img class="lazy square300" data-src="img/map/map_9_8.gif" />
+		<img class="lazy square300" data-src="img/map/map_10_8.gif" />
+		<img class="lazy square300" data-src="img/map/map_11_8.gif" />
+		<img class="lazy square300" data-src="img/map/map_12_8.gif" />
+		<img class="lazy square300" data-src="img/map/map_13_8.gif" />
+		<img class="lazy square300" data-src="img/map/map_14_8.gif" />
+		<img class="lazy square300" data-src="img/map/map_15_8.gif" />
 
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_0_9.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_1_9.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_2_9.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_3_9.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_4_9.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_5_9.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_6_9.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_7_9.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_8_9.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_9_9.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_10_9.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_11_9.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_12_9.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_13_9.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_14_9.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_15_9.gif" ></div>
+		<img class="lazy square300" data-src="img/map/map_0_9.gif" />
+		<img class="lazy square300" data-src="img/map/map_1_9.gif" />
+		<img class="lazy square300" data-src="img/map/map_2_9.gif" />
+		<img class="lazy square300" data-src="img/map/map_3_9.gif" />
+		<img class="lazy square300" data-src="img/map/map_4_9.gif" />
+		<img class="lazy square300" data-src="img/map/map_5_9.gif" />
+		<img class="lazy square300" data-src="img/map/map_6_9.gif" />
+		<img class="lazy square300" data-src="img/map/map_7_9.gif" />
+		<img class="lazy square300" data-src="img/map/map_8_9.gif" />
+		<img class="lazy square300" data-src="img/map/map_9_9.gif" />
+		<img class="lazy square300" data-src="img/map/map_10_9.gif" />
+		<img class="lazy square300" data-src="img/map/map_11_9.gif" />
+		<img class="lazy square300" data-src="img/map/map_12_9.gif" />
+		<img class="lazy square300" data-src="img/map/map_13_9.gif" />
+		<img class="lazy square300" data-src="img/map/map_14_9.gif" />
+		<img class="lazy square300" data-src="img/map/map_15_9.gif" />
 
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_0_10.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_1_10.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_2_10.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_3_10.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_4_10.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_5_10.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_6_10.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_7_10.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_8_10.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_9_10.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_10_10.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_11_10.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_12_10.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_13_10.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_14_10.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_15_10.gif" ></div>
+		<img class="lazy square300" data-src="img/map/map_0_10.gif" />
+		<img class="lazy square300" data-src="img/map/map_1_10.gif" />
+		<img class="lazy square300" data-src="img/map/map_2_10.gif" />
+		<img class="lazy square300" data-src="img/map/map_3_10.gif" />
+		<img class="lazy square300" data-src="img/map/map_4_10.gif" />
+		<img class="lazy square300" data-src="img/map/map_5_10.gif" />
+		<img class="lazy square300" data-src="img/map/map_6_10.gif" />
+		<img class="lazy square300" data-src="img/map/map_7_10.gif" />
+		<img class="lazy square300" data-src="img/map/map_8_10.gif" />
+		<img class="lazy square300" data-src="img/map/map_9_10.gif" />
+		<img class="lazy square300" data-src="img/map/map_10_10.gif" />
+		<img class="lazy square300" data-src="img/map/map_11_10.gif" />
+		<img class="lazy square300" data-src="img/map/map_12_10.gif" />
+		<img class="lazy square300" data-src="img/map/map_13_10.gif" />
+		<img class="lazy square300" data-src="img/map/map_14_10.gif" />
+		<img class="lazy square300" data-src="img/map/map_15_10.gif" />
 
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_0_11.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_1_11.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_2_11.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_3_11.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_4_11.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_5_11.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_6_11.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_7_11.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_8_11.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_9_11.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_10_11.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_11_11.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_12_11.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_13_11.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_14_11.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_15_11.gif" ></div>
+		<img class="lazy square300" data-src="img/map/map_0_11.gif" />
+		<img class="lazy square300" data-src="img/map/map_1_11.gif" />
+		<img class="lazy square300" data-src="img/map/map_2_11.gif" />
+		<img class="lazy square300" data-src="img/map/map_3_11.gif" />
+		<img class="lazy square300" data-src="img/map/map_4_11.gif" />
+		<img class="lazy square300" data-src="img/map/map_5_11.gif" />
+		<img class="lazy square300" data-src="img/map/map_6_11.gif" />
+		<img class="lazy square300" data-src="img/map/map_7_11.gif" />
+		<img class="lazy square300" data-src="img/map/map_8_11.gif" />
+		<img class="lazy square300" data-src="img/map/map_9_11.gif" />
+		<img class="lazy square300" data-src="img/map/map_10_11.gif" />
+		<img class="lazy square300" data-src="img/map/map_11_11.gif" />
+		<img class="lazy square300" data-src="img/map/map_12_11.gif" />
+		<img class="lazy square300" data-src="img/map/map_13_11.gif" />
+		<img class="lazy square300" data-src="img/map/map_14_11.gif" />
+		<img class="lazy square300" data-src="img/map/map_15_11.gif" />
 
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_0_12.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_1_12.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_2_12.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_3_12.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_4_12.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_5_12.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_6_12.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_7_12.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_8_12.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_9_12.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_10_12.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_11_12.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_12_12.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_13_12.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_14_12.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_15_12.gif" ></div>
+		<img class="lazy square300" data-src="img/map/map_0_12.gif" />
+		<img class="lazy square300" data-src="img/map/map_1_12.gif" />
+		<img class="lazy square300" data-src="img/map/map_2_12.gif" />
+		<img class="lazy square300" data-src="img/map/map_3_12.gif" />
+		<img class="lazy square300" data-src="img/map/map_4_12.gif" />
+		<img class="lazy square300" data-src="img/map/map_5_12.gif" />
+		<img class="lazy square300" data-src="img/map/map_6_12.gif" />
+		<img class="lazy square300" data-src="img/map/map_7_12.gif" />
+		<img class="lazy square300" data-src="img/map/map_8_12.gif" />
+		<img class="lazy square300" data-src="img/map/map_9_12.gif" />
+		<img class="lazy square300" data-src="img/map/map_10_12.gif" />
+		<img class="lazy square300" data-src="img/map/map_11_12.gif" />
+		<img class="lazy square300" data-src="img/map/map_12_12.gif" />
+		<img class="lazy square300" data-src="img/map/map_13_12.gif" />
+		<img class="lazy square300" data-src="img/map/map_14_12.gif" />
+		<img class="lazy square300" data-src="img/map/map_15_12.gif" />
 
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_0_13.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_1_13.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_2_13.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_3_13.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_4_13.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_5_13.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_6_13.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_7_13.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_8_13.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_9_13.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_10_13.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_11_13.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_12_13.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_13_13.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_14_13.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_15_13.gif" ></div>
+		<img class="lazy square300" data-src="img/map/map_0_13.gif" />
+		<img class="lazy square300" data-src="img/map/map_1_13.gif" />
+		<img class="lazy square300" data-src="img/map/map_2_13.gif" />
+		<img class="lazy square300" data-src="img/map/map_3_13.gif" />
+		<img class="lazy square300" data-src="img/map/map_4_13.gif" />
+		<img class="lazy square300" data-src="img/map/map_5_13.gif" />
+		<img class="lazy square300" data-src="img/map/map_6_13.gif" />
+		<img class="lazy square300" data-src="img/map/map_7_13.gif" />
+		<img class="lazy square300" data-src="img/map/map_8_13.gif" />
+		<img class="lazy square300" data-src="img/map/map_9_13.gif" />
+		<img class="lazy square300" data-src="img/map/map_10_13.gif" />
+		<img class="lazy square300" data-src="img/map/map_11_13.gif" />
+		<img class="lazy square300" data-src="img/map/map_12_13.gif" />
+		<img class="lazy square300" data-src="img/map/map_13_13.gif" />
+		<img class="lazy square300" data-src="img/map/map_14_13.gif" />
+		<img class="lazy square300" data-src="img/map/map_15_13.gif" />
 
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_0_14.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_1_14.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_2_14.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_3_14.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_4_14.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_5_14.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_6_14.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_7_14.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_8_14.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_9_14.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_10_14.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_11_14.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_12_14.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_13_14.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_14_14.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_15_14.gif" ></div>
+		<img class="lazy square300" data-src="img/map/map_0_14.gif" />
+		<img class="lazy square300" data-src="img/map/map_1_14.gif" />
+		<img class="lazy square300" data-src="img/map/map_2_14.gif" />
+		<img class="lazy square300" data-src="img/map/map_3_14.gif" />
+		<img class="lazy square300" data-src="img/map/map_4_14.gif" />
+		<img class="lazy square300" data-src="img/map/map_5_14.gif" />
+		<img class="lazy square300" data-src="img/map/map_6_14.gif" />
+		<img class="lazy square300" data-src="img/map/map_7_14.gif" />
+		<img class="lazy square300" data-src="img/map/map_8_14.gif" />
+		<img class="lazy square300" data-src="img/map/map_9_14.gif" />
+		<img class="lazy square300" data-src="img/map/map_10_14.gif" />
+		<img class="lazy square300" data-src="img/map/map_11_14.gif" />
+		<img class="lazy square300" data-src="img/map/map_12_14.gif" />
+		<img class="lazy square300" data-src="img/map/map_13_14.gif" />
+		<img class="lazy square300" data-src="img/map/map_14_14.gif" />
+		<img class="lazy square300" data-src="img/map/map_15_14.gif" />
 
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_0_15.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_1_15.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_2_15.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_3_15.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_4_15.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_5_15.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_6_15.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_7_15.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_8_15.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_9_15.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_10_15.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_11_15.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_12_15.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_13_15.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_14_15.gif" ></div>
-		<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/map_15_15.gif" ></div>
+		<img class="lazy square300" data-src="img/map/map_0_15.gif" />
+		<img class="lazy square300" data-src="img/map/map_1_15.gif" />
+		<img class="lazy square300" data-src="img/map/map_2_15.gif" />
+		<img class="lazy square300" data-src="img/map/map_3_15.gif" />
+		<img class="lazy square300" data-src="img/map/map_4_15.gif" />
+		<img class="lazy square300" data-src="img/map/map_5_15.gif" />
+		<img class="lazy square300" data-src="img/map/map_6_15.gif" />
+		<img class="lazy square300" data-src="img/map/map_7_15.gif" />
+		<img class="lazy square300" data-src="img/map/map_8_15.gif" />
+		<img class="lazy square300" data-src="img/map/map_9_15.gif" />
+		<img class="lazy square300" data-src="img/map/map_10_15.gif" />
+		<img class="lazy square300" data-src="img/map/map_11_15.gif" />
+		<img class="lazy square300" data-src="img/map/map_12_15.gif" />
+		<img class="lazy square300" data-src="img/map/map_13_15.gif" />
+		<img class="lazy square300" data-src="img/map/map_14_15.gif" />
+		<img class="lazy square300" data-src="img/map/map_15_15.gif" />
 	</div>
 	
-	<div id="dialog_nagoya_hw" title="名古屋高速">
-		<div id="scroll_nagoya_map">
-			<div class="nagoya_map">
-				<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/toshimap_nagoya_1.gif" ></div>
-				<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/toshimap_nagoya_2.gif" ></div>
-				<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/toshimap_nagoya_3.gif" ></div>
-				<div class="map_tile"><img class="map_tile_img lazy" data-src="img/map/toshimap_nagoya_4.gif" ></div>
+	<div id="dialog_local_hw" title="タイトル">
+		<div id="scroll_local_map">
+			<div class="local_main_map">
+				<img class="lazy square800" data-src="img/map/toshimap_nagoya_1.gif" />
+				<img class="lazy rectangle2064_800" data-src="img/map/toshimap_nagoya_2.gif" />
+				<img class="lazy rectangle800_1840" data-src="img/map/toshimap_nagoya_3.gif" />
+				<img class="lazy rectangle2064_1840" data-src="img/map/toshimap_nagoya_4.gif" />
 			</div>
 		</div>
 	</div>
