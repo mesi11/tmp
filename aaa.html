@@ -6,17 +6,15 @@
 <!--
 	TODO
 	// リサイズアイコンが消える（スクロールストップイベント判定したい）
-	// カーソル切替
 	// http://matome.naver.jp/odai/2132427271913654801
 	// 経路リスト
 	// 画像縮小表示できるか？
-	// 経路線の描画(fabric.js)
-	// http://fabricjs.com/stickman/
 	// menu
-	// ピクトグラム
 	// https://github.com/jillix/jQuery-sidebar/
 	// http://jillix.github.io/jQuery-sidebar/
 	// http://www.skuare.net/test/jsidebar.html
+
+	// https://github.com/kangax/fabric.js/wiki/Optimizing-performance
 -->
 
 <link rel="stylesheet" href="css/jquery-ui.css">
@@ -300,6 +298,7 @@ $(function(){
 			stroke: '#000',
 			selectable: false,
 		});
+//		console.log(circle);
 		canvas.add(circle);
 	}
 
@@ -325,7 +324,15 @@ $(function(){
 
 
 
-
+function getObjectById(id){
+	var canvas = document.getElementById('canvas');
+	var obj = fabric.util.getById('hoge');
+//	canvas.setActiveObject(canvas.item(id));
+console.log(obj);
+	var id = obj.get('id');
+	console.log(id);
+	obj.fill = 'yellow';
+}
 
 
 </script>
@@ -333,7 +340,9 @@ $(function(){
 </head>
 <body>
 <br><br><br><br><br><br>
+<input type="button" onclick="getObjectById('hoge');">
 
+<br>
 <input type="button" onclick="doScroll(3000, 2000);">
 
 <div id="scroll_map">
