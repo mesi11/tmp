@@ -23,44 +23,45 @@
 <script type="text/javascript" src="js/jquery.lazy.min.js"></script>
 <script type="text/javascript" src="js/fabric.min.js"></script>
 
+
+<script type="text/javascript" src="js/jquery.original.scrollmap.js"></script>
+
 <style>
 	#scroll_map {
 		position: relative;
-		top: 50;
-		left: 50;
-		width:1000px;
-		height:700px;
-		overflow:hidden;
-		border:black solid 1px;
+		width: 988px;
+		height: 640px;
+		overflow: hidden;
+		border: black solid 1px;
+		margin: 0;
+		z-index: 100;
 	}
 
 	.main_map {
+		position: absolute;
 		width:4800px;
 		height:4800px;
 		font-size:0pt;
 		margin:0;
-//		border:red solid 1px;
+		z-index: 0;
 	}
 
-	#scroll_local_map{
+	#urban_scroll_map{
 		width: 1000px;
 		height: 700px;
 		overflow: hidden;
 	}
 
-	.local_main_map {
+	.urban_main_map {
 		width:2864px;
 		height:2640px;
 		font-size:0pt;
-		margin:0;
-//		border:red solid 1px;
 	}
 
 
 
 
 	img.lazy{
-//		display: inline-block;
 		-webkit-user-select: none;
 		-ms-user-select: none;
 		user-select: none;
@@ -100,6 +101,33 @@
 		background-color:white
 	}
 
+
+
+/* submap ↓ */
+
+	#submap_target {
+		width: 210px;
+		height: 210px;
+		position: absolute;
+
+		top: 140px;
+		left: 788px;
+		cursor: pointer;
+		background: url(img/map/submap.png);
+		z-index: 200;
+	}
+
+	#float_submap_select {
+		position: absolute;
+		background-color: #FF0000;
+		opacity: 0.5;
+		width: 42px;
+		height: 28px;
+	}
+
+
+/* submap ↑ */
+
 	canvas:hover{
 		cursor: crosshair
 	}
@@ -125,68 +153,53 @@
 
 
 
-(function($) {
-    //プラグイン定義
-    $.fn.ScrollMap = function(options){
-		var mouse_down = false;
-		var cursor = {x:0, y:0};
-
-		//引数を設定する
-/*
-		var defaults = {
-			text   : 'This is basic plugin!!!'
-		};
-		var setting = $.extend(defaults, options);
-*/
-		//アラートを表示
-//		alert(setting.text);
-
-		/*********************
-		 * 地図スクロール処理
-		 *********************/
-		this.mousemove(function(event){
-			var pageX = parseInt(event.pageX);
-			var pageY = parseInt(event.pageY);
-
-//	console.log( "x:" + ($(this).scrollLeft()+pageX) + " y:" + ($(this).scrollTop()+pageY));
-
-			if( mouse_down===true ){
-				// カーソル切替
-				$(this).hover(function(){ $(this).css('cursor', "url('cur/cur_closedhand.cur')"); }, function(){ $(this).css('cursor', "url('cur/cur_hand.cur')"); });
-
-console.log(this);
-
-				var left = $(this).scrollLeft();
-				var top = $(this).scrollTop();
-				$(this).scrollLeft(left + cursor.x - pageX);
-				$(this).scrollTop(top + cursor.y - pageY);
-				cursor.x = pageX;
-				cursor.y = pageY;
-			}
-		}).mousedown(function(event){
-			mouse_down = true;
-			cursor.x = parseInt(event.pageX);
-			cursor.y = parseInt(event.pageY);
-		}).mouseup(function(event){
-			mouse_down = false;
-		}).mouseout(function(event){
-			mouse_down = false;
-		});
-
-		//メソッドチェーン対応(thisを返す)
-		return(this);
-    };
-})(jQuery);
-
 
 
 $(function() {
+	var scroll_map = $("#scroll_map");
+	var sub_map = $( "#submap_target" );
+	var sub_map_select = $( "#float_submap_select" );
+
 	/*********************
 	 * 地図スクロール処理
 	 *********************/
-	$("#scroll_map").ScrollMap();
+	scroll_map.ScrollMap().on('mapscroll', function(event){
+		console.log('scroll');
+		var left = sub_map_select.width() / $(this).width() * $(this).scrollLeft();
+		var top = sub_map_select.height() / $(this).height() * $(this).scrollTop();
+		console.log('left:'+left+' top:'+top);
+		sub_map_select.css('top', top).css('left', left);
+	});
 
-	$("#scroll_local_map").ScrollMap();
+	// 都市マップ
+	$("#urban_scroll_map").ScrollMap();
+
+
+	/*********************
+	 * サブマップ
+	 *********************/
+	sub_map.on({
+		'click': function(event){
+			console.log('x:'+event.offsetX+' y:'+event.offsetY);
+			var left = event.offsetX - ( sub_map_select.width()/2 );
+			var top = event.offsetY - ( sub_map_select.height()/2 );
+			sub_map_select.css('top', top).css('left', left);
+			
+			
+//			setMapLeftTop( scroll_map, left, top );
+		},
+	});
+	sub_map_select.draggable({
+		containment: "parent",
+		drag: function(event, ui){
+			var left = scroll_map.width() / $(this).width() * $(this).position().left;
+			var top = scroll_map.height() / $(this).height() * $(this).position().top;
+			console.log('left:'+left+' top:'+top);
+			setMapLeftTop( scroll_map, left, top );
+			console.log( 'top:'+scroll_map.scrollTop() );
+		}
+	});
+
 
 	/*********************
 	 * 画像ドラッグ防止
@@ -199,7 +212,7 @@ $(function() {
 	$('.lazy').lazy({
 		effect: 'fadeIn',
 		defaultImage: 'img/map/dummy.gif',
-		appendScroll: $("#scroll_map"),
+		appendScroll: scroll_map,
 		bind: event,
 		threshold: 100,
 	});
@@ -210,29 +223,14 @@ $(function() {
 	/*********************
 	 * 地図ダイアログ初期化
 	 *********************/
-	$( "#scroll_local_map" ).dialog({
+	$( "#urban_scroll_map" ).dialog({
 		autoOpen: false,
 		height: 700,
 		width: 1000,
 	});
 
-	doScroll(3006, 3237);
-
-
-// カーソル切替
-$("#scroll_map").hover(function(){
-		console.log(this);
-		$(this).css("cursor", "url('cur/cur_closedhand.cur')");
-	}, function(){
-		console.log("bbb");
-		$(this).css("cursor", "url('cur/cur_hand.cur')");
-	});
-
-
-	console.log("inittttttttttttttttttttttttttttt");
+	doScroll($("#scroll_map"), 3006, 3237);
 });
-
-
 
 $(function(){
 	$( ".local_map_btn" ).hover(
@@ -246,16 +244,27 @@ $(function(){
 	$("#urbanhighway_nagoya_btn").click(
 		function(){
 			// region map ダイアログ表示
-			$( "#scroll_local_map" ).dialog( "open" );
+			$( "#urban_scroll_map" ).dialog( "open" );
 		}
 	);
 });
 
 
-function doScroll(x, y){
+
+function setMapLeftTop(map, left, top){
+	map.scrollTop(top);
+	map.scrollLeft(left);
+}
+
+
+
+function doScroll(obj, x, y){
+
+console.log(this);
+
 	// 現在位置を取得
 	var scroll_map = $( "#scroll_map" );
-//	var map = $( ".main_map" );
+
 
 	var scroll_width = scroll_map.width();
 	var scroll_height = scroll_map.height();
@@ -268,84 +277,25 @@ function doScroll(x, y){
 
 
 
-$(function(){
-	var canvas = new fabric.Canvas('canvas');
-	var pointList = [{id:'hoge', x:3000, y:3237}, {id:'hogehoge',x:2000, y:2237}];
-
-	// 線の描画
-	for(var i=0; i<pointList.length-1; i++){
-		var line = new fabric.Line([pointList[i].x, pointList[i].y, pointList[i+1].x, pointList[i+1].y], {
-			stroke: 'green',
-			fill: 'green',
-			strokeWidth: 5,
-			selectable: false
-		});
-		canvas.add(line);
-	}
-
-
-
-
-	for(var i=0; i<pointList.length; i++){
-		// 円の描画
-		var circle = new fabric.Circle({
-			id: pointList[i].id,
-			left: pointList[i].x,
-			top: pointList[i].y,
-			radius: 7,
-			fill: 'blue',
-			strokeWidth: 2,
-			stroke: '#000',
-			selectable: false,
-		});
-//		console.log(circle);
-		canvas.add(circle);
-	}
-
-
-	/*
-	 * イベント操作
-	 */
-//		circle.on('selected', function(){ console.log("selected"); });
-	// 円クリックで色変更
-	canvas.on('mouse:down', function(options){
-		if(options.target && options.target.type=='circle'){
-			console.log(options.target.id);
-			// ●●●リクエストを飛ばしたい
-			options.target.fill = (options.target.fill=='blue') ? 'red' : 'blue';
-		}
-	});
-
-
-
-	canvas.setBackgroundColor(null, canvas.renderAll.bind(canvas));
-	canvas.renderAll();
-});
-
-
-
-function getObjectById(id){
-	var canvas = document.getElementById('canvas');
-	var obj = fabric.util.getById('hoge');
-//	canvas.setActiveObject(canvas.item(id));
-console.log(obj);
-	var id = obj.get('id');
-	console.log(id);
-	obj.fill = 'yellow';
-}
-
-
 </script>
 
 </head>
 <body>
 <br><br><br><br><br><br>
-<input type="button" onclick="getObjectById('hoge');">
+
 
 <br>
-<input type="button" onclick="doScroll(3000, 2000);">
+
+<div id="submap_target" title="日本地図をクリックするとその場所に移動します">
+	<div id="float_submap_select" title="赤い枠をドラッグして表示位置を移動します"></div>
+</div>
 
 <div id="scroll_map">
+
+
+
+
+
 	<div class="main_map">
 		<canvas id="canvas" width="4800px" height="4800px" style="position: absolute;"></canvas>
 
@@ -623,10 +573,10 @@ console.log(obj);
 		<img class="lazy square300" data-src="img/map/map_14_15.gif" />
 		<img class="lazy square300" data-src="img/map/map_15_15.gif" />
 	</div>
-	
+
 	<div id="dialog_local_hw" title="タイトル">
-		<div id="scroll_local_map">
-			<div class="local_main_map">
+		<div id="urban_scroll_map">
+			<div class="urban_main_map">
 				<img class="lazy square800" data-src="img/map/toshimap_nagoya_1.gif" />
 				<img class="lazy rectangle2064_800" data-src="img/map/toshimap_nagoya_2.gif" />
 				<img class="lazy rectangle800_1840" data-src="img/map/toshimap_nagoya_3.gif" />
@@ -634,6 +584,10 @@ console.log(obj);
 			</div>
 		</div>
 	</div>
+
+
+
+
 </div>
 
 </body>
