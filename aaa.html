@@ -185,8 +185,9 @@ $(function() {
 			var top = event.offsetY - ( sub_map_select.height()/2 );
 			sub_map_select.css('top', top).css('left', left);
 			
-			
-//			setMapLeftTop( scroll_map, left, top );
+			var scrollLeft = scroll_map.width() / sub_map_select.width() * left;
+			var scrollTop = scroll_map.height() / sub_map_select.height() * top;
+			setMapLeftTop( scroll_map, scrollLeft, scrollTop );
 		},
 	});
 	sub_map_select.draggable({
