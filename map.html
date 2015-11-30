@@ -261,7 +261,7 @@ $(function(){
 (function($) {
 	$(document).ready(function() {
 		$.slidebars({
-			siteClose: false
+			siteClose: false // true or false
 		});
 	});
 }) (jQuery);
@@ -341,7 +341,7 @@ console.log(this);
 <br>
 
 <div class="sb-toggle-right"><a href="">MENU</a></div>
-
+<div class="sb-close"><a href="">close</a></div>
 
 <div id="sb-site">
 
@@ -642,7 +642,7 @@ console.log(this);
 
 </div>
 
-<div class="sb-slidebar sb-right">
+<div class="sb-slidebar sb-right sb-style-overlay sb-width-custom" data-sb-width="50%">
 	<nav>
 	  	<ul class="sb-menu">
 			<li><a href="">Home</a></li>
