@@ -169,7 +169,10 @@ $(function() {
 	/*********************
 	 * 地図スクロール処理
 	 *********************/
-	scroll_map.ScrollMap().on('mapscroll', function(event){
+	scroll_map.ScrollMap({
+		left : 3006,
+		top  : 3237
+		}).on('mapscroll', function(event){
 		console.log('scroll');
 		var left = sub_map_select.width() / $(this).width() * $(this).scrollLeft();
 		var top = sub_map_select.height() / $(this).height() * $(this).scrollTop();
@@ -236,7 +239,7 @@ $(function() {
 		width: 1000,
 	});
 
-	doScroll($("#scroll_map"), 3006, 3237);
+//	doScroll($("#scroll_map"), 3006, 3237);
 });
 
 $(function(){
@@ -258,16 +261,6 @@ $(function(){
 
 
 
-(function($) {
-	$(document).ready(function() {
-		$.slidebars({
-			siteClose: false // true or false
-		});
-	});
-}) (jQuery);
-
-
-
 
 
 
@@ -275,26 +268,54 @@ $(function(){
 	var stage = new createjs.Stage("canvas");
 
 	var circle = new createjs.Shape();
-	circle.graphics.beginFill("DeepSkyBlue").drawCircle(0, 0, 50);
-	circle.x = 100;
-	circle.y = 100;
-	circle.name = "hoge"
-	stage.addChild(circle);
 
+
+
+	var g = new createjs.Graphics();
+	g.beginStroke("#000000");
+
+	//開始地点のサブパス
+    g.moveTo(-100,0);
+	g.lineTo(-50,50);
+	g.lineTo(0,-100);
+	g.lineTo(50,100);
+	g.lineTo(100,-50);
+
+	var shape = new createjs.Shape(g);
+	shape.x = $(window).width()/2;
+	shape.y = $(window).height()/2;
+
+	stage.addChild(shape);
 	stage.update();
-	
-	obj = stage.getChildByName("hoge");
-	
-	obj.addEventListener("click", function(event) {
-		var element = event.target;
-//		element.graphics.clear();
-		element.graphics.beginFill("red");
 
 
 
+
+drawPoint(50, 50, "aaa", circle);
+drawPoint(100, 100, name, circle);
+
+
+
+	function drawPoint(x, y, name, circle){
+		circle.graphics.beginFill("DeepSkyBlue").drawCircle(x, y, 10);
+		circle.x = 100;
+		circle.y = 100;
+		circle.name = name;
+		stage.addChild(circle);
+
+		circle = stage.getChildByName(name);
+		circle.addEventListener("click", function(event) {
+			var element = event.target;
+			element.graphics.beginFill("red").drawCircle(x, y, 10);
+	//console.log(element.graphics);
+			stage.update();
+		})
 		stage.update();
-		alert("clicked");
-	})
+	}
+
+
+
+
 });
 
 
@@ -330,6 +351,7 @@ console.log(this);
 
 
 </script>
+
 
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -642,6 +664,29 @@ console.log(this);
 
 </div>
 
+
+
+<script>
+(function($) {
+	$(document).ready(function() {
+		$.slidebars({
+			siteClose: false // true or false
+		});
+	});
+}) (jQuery);
+</script>
+
+<style>
+.sb-slidebar {
+	background-color: #6FD7EC;
+}
+
+
+</style>
+
+
+
+
 <div class="sb-slidebar sb-right sb-style-overlay sb-width-custom" data-sb-width="50%">
 	<nav>
 	  	<ul class="sb-menu">
@@ -649,6 +694,9 @@ console.log(this);
 			<li><a href="">Twitter</a></li>
 			<li><a href="">Facebook</a></li>
 			<li><a href="">Google +</a></li>
+			<li onclick=" console.log( $('.sb-width-custom').width() ); $('.sb-width-custom').width('700px')">hogehoge</li>
+
+<li><img style="width:50px;height:30px;background: url(yen32.svg) 0 0 no-repeat;background-size: 20px 20px;"></li>
 		</ul>
 	</nav>
 </div>
